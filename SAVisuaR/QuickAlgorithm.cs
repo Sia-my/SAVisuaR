@@ -21,6 +21,13 @@
                 return;
             }
 
+            int middle = left + (right - left) / 2;
+
+            if (middle != right)
+            {
+                RecordSwap(middle, right);
+            }
+
             int pivot = Items[right];
             int boundary = left;
 
