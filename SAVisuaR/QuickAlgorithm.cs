@@ -21,11 +21,11 @@
                 return;
             }
 
-            int middle = left + (right - left) / 2;
+            int middle = left + (right - left) / 2;  //가운데 인덱스 계산
 
-            if (middle != right)
+            if (middle != right)                     //중앙 요소와 마지막 요소 교환
             {
-                RecordSwap(middle, right);
+                RecordSwap(middle, right);          //중앙 요소를 마지막 요소로 이동
             }
 
             int pivot = Items[right];
