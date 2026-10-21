@@ -8,52 +8,63 @@ namespace SAVisuaR
         {
             InitializeComponent();
 
-            TestQuickSort(); // 임시 테스트
+            TestAlgStepRecording();
 
         }
 
-        private bool IsSorted(int[] data)
-        {
-            for (int i = 1; i < data.Length; i++)
-            {
-                if (data[i - 1] > data[i])
-                {
-                    return false;
-                }
-            }
 
-            return true;
+        private void TestAlgStepRecording()
+        {
+            int[] source = { 8, 3, 10, 1, 6, 4, 9, 2, 7, 5 };
+
+            TestAlgStep("Insert",
+                new InsertAlgorithm(), new InsertAlgorithm(), source);
+
+            TestAlgStep("Bubble",
+                new BubbleAlgorithm(), new BubbleAlgorithm(), source);
+
+            TestAlgStep("Quick",
+                new QuickAlgorithm(), new QuickAlgorithm(), source);
         }
 
-        private void TestQuickSort()
+        private void TestAlgStep(
+            string name,
+            Sorter recordSorter,
+            Sorter noRecordSorter,
+            int[] source)
         {
-            DataMaker maker = new DataMaker();
+            // 기록을 켠 상태
+            AlgResult onResult = recordSorter.Sort(
+                source, "Test", 1, true);
 
-            // 정렬된 데이터 10,000개 테스트
-            int[] sorted = maker.MakeSorted(10000);
-            QuickAlgorithm quick1 = new QuickAlgorithm();
+            int expectedCount =
+                onResult.ComparisonCount + onResult.SwapCount;
 
-            AlgResult result1 =
-                quick1.Sort(sorted, "Sorted", 1, false);
-
-            Debug.WriteLine(
-                $"정렬 데이터: 비교={result1.ComparisonCount}, " +
-                $"교환={result1.SwapCount}, " +
-                $"재귀 깊이={result1.MaxRecursionDepth}");
-
-            // 역순 데이터 10,000개 테스트
-            int[] reverse = maker.MakeReverse(10000);
-            QuickAlgorithm quick2 = new QuickAlgorithm();
-
-            AlgResult result2 =
-                quick2.Sort(reverse, "Reverse", 1, false);
-
-            Debug.WriteLine("정렬 여부: " + IsSorted(quick1.SortedArray));
+            bool onOK = recordSorter.Steps.Count == expectedCount;
 
             Debug.WriteLine(
-                $"역순 데이터: 비교={result2.ComparisonCount}, " +
-                $"교환={result2.SwapCount}, " +
-                $"재귀 깊이={result2.MaxRecursionDepth}");
+                $"{name} ON: Steps={recordSorter.Steps.Count}, " +
+                $"비교+교환={expectedCount}, 확인={onOK}");
+
+            // 기록을 끈 상태
+            AlgResult offResult = noRecordSorter.Sort(
+                source, "Test", 1, false);
+
+            bool offOK = noRecordSorter.Steps.Count == 0;
+
+            bool countOK =
+                onResult.ComparisonCount == offResult.ComparisonCount &&
+                onResult.SwapCount == offResult.SwapCount &&
+                onResult.MaxRecursionDepth == offResult.MaxRecursionDepth;
+
+            Debug.WriteLine(
+                $"{name} OFF: Steps={noRecordSorter.Steps.Count}, " +
+                $"확인={offOK}");
+
+            Debug.WriteLine(
+                $"{name} ON/OFF 카운터 일치: {countOK}");
+
+            Debug.WriteLine("--------------------------------");
         }
     }
 }
