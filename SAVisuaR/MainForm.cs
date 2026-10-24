@@ -1,70 +1,72 @@
 using System.Diagnostics;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace SAVisuaR
 {
     public partial class MainForm : Form
     {
+        private BarGraph barGraph;
+        private DataMaker dataMaker = new DataMaker();
         public MainForm()
         {
             InitializeComponent();
 
-            TestAlgStepRecording();
+            SetupBarGraphTest();
+
 
         }
 
 
-        private void TestAlgStepRecording()
+        private void SetupBarGraphTest()
         {
-            int[] source = { 8, 3, 10, 1, 6, 4, 9, 2, 7, 5 };
+            barGraph = new BarGraph();
 
-            TestAlgStep("Insert",
-                new InsertAlgorithm(), new InsertAlgorithm(), source);
+            barGraph.Location = new Point(20, 20);
+            barGraph.Size = new Size(700, 300);
+            barGraph.Anchor =
+                AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
-            TestAlgStep("Bubble",
-                new BubbleAlgorithm(), new BubbleAlgorithm(), source);
+            Controls.Add(barGraph);
 
-            TestAlgStep("Quick",
-                new QuickAlgorithm(), new QuickAlgorithm(), source);
+            barGraph.SetData(dataMaker.MakeRandom(20));
+
+            Button compareButton = new Button();
+            compareButton.Text = "비교 강조";
+            compareButton.Location = new Point(20, 340);
+            compareButton.Size = new Size(100, 30);
+            compareButton.Click += CompareButton_Click;
+            Controls.Add(compareButton);
+
+            Button swapButton = new Button();
+            swapButton.Text = "교환";
+            swapButton.Location = new Point(130, 340);
+            swapButton.Size = new Size(100, 30);
+            swapButton.Click += SwapButton_Click;
+            Controls.Add(swapButton);
+
+            Button clearButton = new Button();
+            clearButton.Text = "강조 해제";
+            clearButton.Location = new Point(240, 340);
+            clearButton.Size = new Size(100, 30);
+            clearButton.Click += ClearButton_Click;
+            Controls.Add(clearButton);
         }
 
-        private void TestAlgStep(
-            string name,
-            Sorter recordSorter,
-            Sorter noRecordSorter,
-            int[] source)
+        private void CompareButton_Click(object sender, EventArgs e)
         {
-            // 기록을 켠 상태
-            AlgResult onResult = recordSorter.Sort(
-                source, "Test", 1, true);
+            barGraph.SetHighlight(2, 3, StepType.Compare);
+        }
 
-            int expectedCount =
-                onResult.ComparisonCount + onResult.SwapCount;
+        private void SwapButton_Click(object sender, EventArgs e)
+        {
+            barGraph.Swap(2, 3);
+            barGraph.SetHighlight(2, 3, StepType.Swap);
+        }
 
-            bool onOK = recordSorter.Steps.Count == expectedCount;
-
-            Debug.WriteLine(
-                $"{name} ON: Steps={recordSorter.Steps.Count}, " +
-                $"비교+교환={expectedCount}, 확인={onOK}");
-
-            // 기록을 끈 상태
-            AlgResult offResult = noRecordSorter.Sort(
-                source, "Test", 1, false);
-
-            bool offOK = noRecordSorter.Steps.Count == 0;
-
-            bool countOK =
-                onResult.ComparisonCount == offResult.ComparisonCount &&
-                onResult.SwapCount == offResult.SwapCount &&
-                onResult.MaxRecursionDepth == offResult.MaxRecursionDepth;
-
-            Debug.WriteLine(
-                $"{name} OFF: Steps={noRecordSorter.Steps.Count}, " +
-                $"확인={offOK}");
-
-            Debug.WriteLine(
-                $"{name} ON/OFF 카운터 일치: {countOK}");
-
-            Debug.WriteLine("--------------------------------");
+        private void ClearButton_Click(object sender, EventArgs e)
+        {
+            barGraph.ClearHighlight();
         }
     }
 }
